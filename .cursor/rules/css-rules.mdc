@@ -1,0 +1,207 @@
+---
+description: CSS styling standards with BEM methodology and REM units
+globs: **/*.{css,scss,sass,less}
+alwaysApply: false
+---
+
+# CSS Styling Rules
+
+## Base Configuration
+
+Always set the HTML font-size to 62.5% for easy REM calculations (1rem = 10px):
+
+```css
+html {
+  font-size: 62.5%; /* 1rem = 10px */
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+```
+
+---
+
+## REM Units
+
+Use REM units for sizing, spacing, and typography. Never use pixels except for borders.
+
+```css
+/* ❌ BAD */
+.button {
+  font-size: 16px;
+  padding: 10px 20px;
+  margin: 15px;
+}
+
+/* ✅ GOOD */
+.button {
+  font-size: 1.6rem; /* 16px */
+  padding: 1rem 2rem; /* 10px 20px */
+  margin: 1.5rem; /* 15px */
+  border: 1px solid #ccc; /* Pixels OK for borders */
+}
+```
+
+---
+
+## BEM Methodology
+
+Use Block-Element-Modifier naming convention for all classes.
+
+### Structure
+- **Block**: Standalone component (`.card`)
+- **Element**: Part of a block (`.card__title`)
+- **Modifier**: Variant of block/element (`.card--featured`, `.card__title--large`)
+
+### Naming Pattern
+```
+.block {}
+.block__element {}
+.block--modifier {}
+.block__element--modifier {}
+```
+
+### Examples
+
+```css
+/* ❌ BAD */
+.card-title {}
+.cardTitle {}
+.card .title {}
+.featured-card {}
+
+/* ✅ GOOD - Block */
+.card {
+  padding: 2rem;
+  background: white;
+  border-radius: 0.8rem;
+}
+
+/* ✅ GOOD - Element */
+.card__title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.card__description {
+  font-size: 1.4rem;
+  color: #666;
+}
+
+.card__footer {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+/* ✅ GOOD - Modifier */
+.card--featured {
+  border: 2px solid gold;
+}
+
+.card__title--large {
+  font-size: 2.4rem;
+}
+```
+
+---
+
+## No Horizontal Scrolling
+
+Prevent horizontal overflow on all pages.
+
+```css
+/* ✅ Base prevention */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* ✅ Ensure all containers respect viewport width */
+* {
+  max-width: 100%;
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ✅ Handle long text */
+.text-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ❌ BAD - Fixed widths that exceed viewport */
+.container {
+  width: 1400px;
+}
+
+/* ✅ GOOD - Responsive widths */
+.container {
+  width: 100%;
+  max-width: 120rem; /* 1200px */
+  padding: 0 2rem;
+  margin: 0 auto;
+}
+```
+
+---
+
+## Additional Best Practices
+
+### Avoid Nesting in BEM
+BEM is flat by design. Don't nest selectors.
+
+```css
+/* ❌ BAD */
+.card {
+  .card__title {
+    font-size: 2rem;
+  }
+}
+
+/* ✅ GOOD */
+.card__title {
+  font-size: 2rem;
+}
+```
+
+### Use Consistent Spacing
+
+```css
+/* Use multiples of 0.4rem or 0.8rem for consistency */
+.component {
+  padding: 1.6rem; /* 16px */
+  margin-bottom: 2.4rem; /* 24px */
+  gap: 0.8rem; /* 8px */
+}
+```
+
+### Responsive Design
+
+```css
+/* Mobile-first approach */
+.card {
+  padding: 1.6rem;
+  font-size: 1.4rem;
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+  .card {
+    padding: 2.4rem;
+    font-size: 1.6rem;
+  }
+}
+
+/* Desktop and up */
+@media (min-width: 1024px) {
+  .card {
+    padding: 3.2rem;
+  }
+}
+```

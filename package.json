@@ -1,0 +1,23 @@
+{
+  "name": "sellit-cursor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SellIt monorepo (Express + MongoDB backend, React + TS frontend).",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm -w backend run dev\" \"npm -w frontend run dev\"",
+    "test": "npm -w backend test && npm -w frontend test",
+    "lint": "npm -w backend run lint && npm -w frontend run lint",
+    "build": "npm -w backend run build && npm -w frontend run build"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "npm@11.4.2",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
