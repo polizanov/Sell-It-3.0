@@ -1,0 +1,55 @@
+/* SellIt design tokens (dark-only, black+orange). */
+
+:root {
+  /* Typography */
+  --sl-font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --sl-line-md: 1.5;
+
+  --sl-text-xs: 1.2rem; /* 12px */
+  --sl-text-sm: 1.4rem; /* 14px */
+  --sl-text-md: 1.6rem; /* 16px */
+  --sl-text-lg: 2rem; /* 20px */
+  --sl-text-xl: 2.8rem; /* 28px */
+
+  /* Spacing (4px grid) */
+  --sl-space-1: 0.4rem; /* 4px */
+  --sl-space-2: 0.8rem; /* 8px */
+  --sl-space-3: 1.2rem; /* 12px */
+  --sl-space-4: 1.6rem; /* 16px */
+  --sl-space-5: 2.4rem; /* 24px */
+  --sl-space-6: 3.2rem; /* 32px */
+  --sl-space-7: 4.8rem; /* 48px */
+
+  /* Radius / shadows */
+  --sl-radius-sm: 1rem; /* 10px */
+  --sl-radius-md: 1.4rem; /* 14px */
+  --sl-radius-lg: 1.8rem; /* 18px */
+  --sl-shadow-sm: 0 0.1rem 0 rgba(0, 0, 0, 0.4), 0 1.6rem 4rem rgba(0, 0, 0, 0.35);
+
+  /* Motion */
+  --sl-dur-1: 120ms;
+  --sl-dur-2: 200ms;
+  --sl-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Semantic colors (dark-only) */
+  --sl-bg: #0b0c0f;
+  --sl-fg: rgba(255, 255, 255, 0.92);
+  --sl-muted: rgba(255, 255, 255, 0.64);
+  --sl-muted-2: rgba(255, 255, 255, 0.48);
+
+  --sl-surface: #12131a;
+  --sl-surface-2: #171824;
+  --sl-border: rgba(255, 255, 255, 0.08);
+
+  --sl-primary: #ff7a18;
+  --sl-primary-hover: #ff8b3d;
+  --sl-primary-active: #ff6a00;
+  --sl-primary-contrast: #101114;
+
+  --sl-danger: #ff4d4d;
+  --sl-success: #22c55e;
+
+  --sl-focus-ring: rgba(255, 122, 24, 0.45);
+}

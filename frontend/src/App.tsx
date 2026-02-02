@@ -1,7 +1,4 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
 import { api } from './services/api'
 
@@ -10,41 +7,51 @@ function App() {
   const [apiStatus, setApiStatus] = useState<string | null>(null)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="sl-page">
+      <div className="sl-container">
+        <header className="sl-header">
+          <div>
+            <h1 className="sl-h1">SellIt</h1>
+            <p className="sl-subtitle">Dark-only UI (black + orange)</p>
+          </div>
+          <span className="sl-pill">
+            <strong>Theme</strong> Dark
+          </span>
+        </header>
+
+        <section className="sl-card" aria-label="Demo controls">
+          <div className="sl-row">
+            <button
+              className="sl-button sl-button--primary"
+              onClick={async () => {
+                try {
+                  const res = await api.get('/api/health')
+                  setApiStatus(res.data?.status ?? 'unknown')
+                } catch {
+                  setApiStatus('error')
+                }
+              }}
+            >
+              Check API
+            </button>
+
+            <button className="sl-button" onClick={() => setCount((c) => c + 1)}>
+              Count: <span className="sl-code">{count}</span>
+            </button>
+          </div>
+
+          <div className="sl-divider" />
+
+          <p className="sl-subtitle">
+            API status:{' '}
+            <span className="sl-code">{apiStatus ?? 'unknown (not checked yet)'}</span>
+          </p>
+          <p className="sl-subtitle">
+            Edit <span className="sl-code">src/App.tsx</span> and save to test HMR.
+          </p>
+        </section>
       </div>
-      <h1>SellIt</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <button
-          onClick={async () => {
-            try {
-              const res = await api.get('/api/health')
-              setApiStatus(res.data?.status ?? 'unknown')
-            } catch {
-              setApiStatus('error')
-            }
-          }}
-        >
-          Check API
-        </button>
-        {apiStatus ? <p>API status: {apiStatus}</p> : null}
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
 

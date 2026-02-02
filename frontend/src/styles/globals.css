@@ -1,0 +1,184 @@
+/* SellIt global styles (dark-only, black+orange).
+   Keep this file small; prefer semantic tokens and reuse. */
+
+@import './tokens.css';
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  font-size: 62.5%; /* 1rem = 10px */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--sl-font-sans);
+  font-size: var(--sl-text-md);
+  line-height: var(--sl-line-md);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background: radial-gradient(120rem 60rem at 20% 0%, rgba(255, 122, 24, 0.09), transparent 60%),
+    var(--sl-bg);
+  color: var(--sl-fg);
+}
+
+::selection {
+  background: rgba(255, 122, 24, 0.28);
+}
+
+a {
+  color: var(--sl-primary);
+  text-decoration: none;
+  text-underline-offset: 0.3rem;
+}
+
+a:hover {
+  color: var(--sl-primary-hover);
+  text-decoration: underline;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 0.3rem solid var(--sl-focus-ring);
+  outline-offset: 0.2rem;
+}
+
+/* App-level layout helpers (keep minimal). */
+.sl-page {
+  min-height: 100vh;
+  padding: var(--sl-space-7) var(--sl-space-4);
+  display: flex;
+  justify-content: center;
+}
+
+.sl-container {
+  width: min(96rem, 100%);
+}
+
+.sl-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sl-space-4);
+  margin-bottom: var(--sl-space-5);
+}
+
+.sl-h1 {
+  margin: 0;
+  font-size: var(--sl-text-xl);
+  letter-spacing: -0.02em;
+}
+
+.sl-subtitle {
+  margin: var(--sl-space-1) 0 0 0;
+  color: var(--sl-muted);
+  font-size: var(--sl-text-sm);
+}
+
+.sl-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--sl-border);
+  border-radius: var(--sl-radius-md);
+  padding: var(--sl-space-5);
+  box-shadow: var(--sl-shadow-sm);
+}
+
+.sl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sl-space-3);
+}
+
+.sl-button {
+  appearance: none;
+  border-radius: var(--sl-radius-sm);
+  border: 1px solid var(--sl-border);
+  background: var(--sl-surface);
+  padding: 1rem 1.4rem;
+  cursor: pointer;
+  transition: background var(--sl-dur-2) var(--sl-ease-standard),
+    border-color var(--sl-dur-2) var(--sl-ease-standard),
+    transform var(--sl-dur-1) var(--sl-ease-standard);
+}
+
+.sl-button:hover {
+  background: var(--sl-surface-2);
+  border-color: rgba(255, 122, 24, 0.35);
+}
+
+.sl-button:active {
+  transform: translateY(1px);
+}
+
+.sl-button--primary {
+  background: var(--sl-primary);
+  color: var(--sl-primary-contrast);
+  border-color: rgba(255, 122, 24, 0.55);
+}
+
+.sl-button--primary:hover {
+  background: var(--sl-primary-hover);
+}
+
+.sl-button--primary:active {
+  background: var(--sl-primary-active);
+}
+
+.sl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 1rem;
+  border-radius: 999rem;
+  border: 1px solid var(--sl-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--sl-muted);
+  font-size: var(--sl-text-sm);
+}
+
+.sl-pill strong {
+  color: var(--sl-fg);
+  font-weight: 600;
+}
+
+.sl-code {
+  font-family: var(--sl-font-mono);
+  font-size: 1.4rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sl-border);
+}
+
+.sl-divider {
+  height: 1px;
+  background: var(--sl-border);
+  margin: var(--sl-space-4) 0;
+}

@@ -1,9 +1,6 @@
 ---
-description: CSS styling standards with BEM methodology and REM units
-globs: **/*.{css,scss,sass,less}
-alwaysApply: false
+alwaysApply: true
 ---
-
 # CSS Styling Rules
 
 ## Base Configuration
