@@ -2,6 +2,7 @@
    Keep this file small; prefer semantic tokens and reuse. */
 
 @import './tokens.css';
+@import './navigation.css';
 
 :root {
   color-scheme: dark;
@@ -75,6 +76,10 @@ select {
   padding: var(--sl-space-7) var(--sl-space-4);
   display: flex;
   justify-content: center;
+}
+
+.sl-main {
+  width: 100%;
 }
 
 .sl-container {
