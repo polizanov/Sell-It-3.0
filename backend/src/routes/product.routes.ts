@@ -155,14 +155,34 @@ productRoutes.post(
   }
 );
 
-productRoutes.get('/', async (_req: Request, res: Response) => {
-  const products = (await Product.find({})
-    .sort({ publishedAt: -1 })
-    .populate({ path: 'categoryId', select: { name: 1 } })
-    .lean()) as unknown as ProductListItem[];
+productRoutes.get('/', async (req: Request, res: Response) => {
+  const rawPage = Array.isArray(req.query.page) ? req.query.page[0] : req.query.page;
+  const rawLimit = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+
+  const parsedPage = typeof rawPage === 'string' ? Number.parseInt(rawPage, 10) : Number.NaN;
+  const parsedLimit = typeof rawLimit === 'string' ? Number.parseInt(rawLimit, 10) : Number.NaN;
+
+  const page = Number.isFinite(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
+  const limitBase = Number.isFinite(parsedLimit) && parsedLimit >= 1 ? parsedLimit : 9;
+  const limit = Math.min(50, limitBase);
+
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+  const [total, products] = await Promise.all([
+    Product.countDocuments(filter),
+    Product.find(filter)
+      .sort({ publishedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: 'categoryId', select: { name: 1 } })
+      .lean()
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return res.json({
-    products: products.map((p) => {
+    products: (products as unknown as ProductListItem[]).map((p) => {
       const categoryId = isPopulatedCategory(p.categoryId)
         ? p.categoryId._id.toString()
         : p.categoryId.toString();
@@ -181,7 +201,11 @@ productRoutes.get('/', async (_req: Request, res: Response) => {
         images: p.images ?? [],
         publishedAt: new Date(p.publishedAt).toISOString()
       };
-    })
+    }),
+    page,
+    limit,
+    total,
+    totalPages
   });
 });
 
