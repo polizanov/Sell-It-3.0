@@ -47,6 +47,10 @@ const productSchema = new mongoose.Schema(
         message: 'Images must have at most 5 items'
       }
     },
+    likedUsers: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      default: []
+    },
     publishedAt: {
       type: Date,
       required: true,

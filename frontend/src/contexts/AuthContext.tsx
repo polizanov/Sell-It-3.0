@@ -12,6 +12,7 @@ export type AuthUser = {
 
 type AuthContextValue = {
   token: string | null;
+  userId: string | null;
   user: AuthUser | null;
   isLoading: boolean;
   login: (args: { email: string; password: string }) => Promise<void>;
@@ -33,11 +34,46 @@ function getToken() {
   return localStorage.getItem('sellit_token');
 }
 
+function decodeJwtPayload(token: string): unknown {
+  const parts = token.split('.');
+  if (parts.length < 2) throw new Error('Invalid JWT');
+  const raw = parts[1];
+
+  const normalized = raw.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+  const json = atob(padded);
+  return JSON.parse(json) as unknown;
+}
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function extractUserIdFromToken(token: string | null) {
+  if (!token) return null;
+  try {
+    const payload = decodeJwtPayload(token);
+    if (!isRecord(payload)) return null;
+
+    // Backend uses `sub` as user id; keep fallbacks for safety.
+    const maybe =
+      (typeof payload.sub === 'string' && payload.sub) ||
+      (typeof payload.userId === 'string' && payload.userId) ||
+      (typeof payload.id === 'string' && payload.id) ||
+      null;
+    return maybe;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tokenState, setTokenState] = useState<string | null>(() => getToken());
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [lastError, setLastError] = useState<HttpError | null>(null);
+
+  const userId = useMemo(() => extractUserIdFromToken(tokenState), [tokenState]);
 
   const logout = useCallback(() => {
     setToken(null);
@@ -105,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       token: tokenState,
+      userId,
       user,
       isLoading,
       login,
@@ -114,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       resendVerification,
       lastError
     }),
-    [tokenState, user, isLoading, login, register, logout, refreshMe, resendVerification, lastError]
+    [tokenState, userId, user, isLoading, login, register, logout, refreshMe, resendVerification, lastError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

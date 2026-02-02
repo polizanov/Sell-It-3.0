@@ -1,5 +1,5 @@
 import express, { type Request, type Response } from 'express';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import type { Types } from 'mongoose';
 
 import { authenticate } from '../middleware/authenticate';
@@ -28,6 +28,10 @@ type ProductListItem = {
   categoryId: Types.ObjectId | { _id: Types.ObjectId; name?: string };
   images?: Array<{ url: string; publicId: string }>;
   publishedAt: Date;
+};
+
+type ProductDetailsItem = ProductListItem & {
+  likedUsers?: Types.ObjectId[];
 };
 
 function isPopulatedCategory(
@@ -181,3 +185,117 @@ productRoutes.get('/', async (_req: Request, res: Response) => {
   });
 });
 
+productRoutes.get(
+  '/:id',
+  [param('id').isMongoId().withMessage('id must be a valid Mongo id')],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const product = (await Product.findById(req.params.id)
+      .populate({ path: 'categoryId', select: { name: 1 } })
+      .lean()) as unknown as ProductDetailsItem | null;
+
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    const categoryId = isPopulatedCategory(product.categoryId)
+      ? product.categoryId._id.toString()
+      : product.categoryId.toString();
+    const categoryName = isPopulatedCategory(product.categoryId)
+      ? product.categoryId.name ?? 'unknown'
+      : 'unknown';
+
+    const likedUsers = (product.likedUsers ?? []).map((x) => x.toString());
+
+    return res.json({
+      product: {
+        id: product._id.toString(),
+        sellerId: product.sellerId.toString(),
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        category: { id: categoryId, name: categoryName },
+        images: product.images ?? [],
+        likedUsers,
+        favoritesCount: likedUsers.length,
+        publishedAt: new Date(product.publishedAt).toISOString()
+      }
+    });
+  }
+);
+
+productRoutes.post(
+  '/:id/favorite',
+  authenticate,
+  requireVerified,
+  [param('id').isMongoId().withMessage('id must be a valid Mongo id')],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    const existing = await Product.findById(req.params.id).select({ sellerId: 1 }).lean();
+    if (!existing) return res.status(404).json({ message: 'Product not found' });
+    if (existing.sellerId.toString() === userId) {
+      return res.status(403).json({ message: 'You cannot favorite your own product' });
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { likedUsers: userId } },
+      { new: true }
+    )
+      .select({ likedUsers: 1 })
+      .lean();
+
+    if (!updated) return res.status(404).json({ message: 'Product not found' });
+
+    const likedUsers = ((updated as unknown as { likedUsers?: Types.ObjectId[] }).likedUsers ?? []).map((x) =>
+      x.toString()
+    );
+
+    return res.json({
+      favorite: {
+        isFavorited: true,
+        favoritesCount: likedUsers.length,
+        likedUsers
+      }
+    });
+  }
+);
+
+productRoutes.delete(
+  '/:id/favorite',
+  authenticate,
+  requireVerified,
+  [param('id').isMongoId().withMessage('id must be a valid Mongo id')],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    const existing = await Product.findById(req.params.id).select({ sellerId: 1 }).lean();
+    if (!existing) return res.status(404).json({ message: 'Product not found' });
+    if (existing.sellerId.toString() === userId) {
+      return res.status(403).json({ message: 'You cannot favorite your own product' });
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $pull: { likedUsers: userId } },
+      { new: true }
+    )
+      .select({ likedUsers: 1 })
+      .lean();
+
+    if (!updated) return res.status(404).json({ message: 'Product not found' });
+
+    const likedUsers = ((updated as unknown as { likedUsers?: Types.ObjectId[] }).likedUsers ?? []).map((x) =>
+      x.toString()
+    );
+
+    return res.json({
+      favorite: {
+        isFavorited: false,
+        favoritesCount: likedUsers.length,
+        likedUsers
+      }
+    });
+  }
+);

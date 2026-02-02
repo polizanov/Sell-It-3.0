@@ -93,7 +93,15 @@ export function AllProducts() {
                   >
                     <div className="sl-row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div style={{ minWidth: 0 }}>
-                        <h2 style={{ margin: 0, fontSize: '2rem' }}>{p.title}</h2>
+                        <h2 style={{ margin: 0, fontSize: '2rem' }}>
+                          <Link
+                            to={`/products/${p.id}`}
+                            style={{ color: 'inherit', textDecoration: 'none' }}
+                            aria-label={`View details for ${p.title}`}
+                          >
+                            {p.title}
+                          </Link>
+                        </h2>
                         <p className="sl-subtitle" style={{ marginTop: '0.6rem' }}>
                           {p.description.length > 180 ? `${p.description.slice(0, 180)}…` : p.description}
                         </p>

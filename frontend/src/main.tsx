@@ -9,6 +9,7 @@ import { AllProducts } from './pages/AllProducts'
 import { CreateProduct } from './pages/CreateProduct'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
+import { ProductDetails } from './pages/ProductDetails'
 import { Profile } from './pages/Profile'
 import { Register } from './pages/Register'
 import { VerifyEmail } from './pages/VerifyEmail'
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
         )
       },
       { path: 'products', element: <AllProducts /> },
+      { path: 'products/:id', element: <ProductDetails /> },
       {
         path: 'products/create',
         element: (
