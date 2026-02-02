@@ -3,6 +3,9 @@ import express from 'express';
 import helmet from 'helmet';
 
 import { authRoutes } from './routes/auth.routes';
+import { categoryRoutes } from './routes/category.routes';
+import { productRoutes } from './routes/product.routes';
+import { testUtilsRoutes } from './routes/testUtils.routes';
 
 export function createApp() {
   const app = express();
@@ -26,6 +29,12 @@ export function createApp() {
   });
 
   app.use('/api/auth', authRoutes);
+  app.use('/api/categories', categoryRoutes);
+  app.use('/api/products', productRoutes);
+
+  if (process.env.ENABLE_TEST_UTILS === 'true') {
+    app.use('/api/test-utils', testUtilsRoutes);
+  }
 
   return app;
 }

@@ -32,8 +32,8 @@ export function Navigation() {
   }
 
   useEffect(() => {
-    closeMobileMenu()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const t = window.setTimeout(() => closeMobileMenu(), 0)
+    return () => window.clearTimeout(t)
   }, [location.pathname])
 
   useEffect(() => {

@@ -76,7 +76,6 @@ authRoutes.post(
     try {
       await sendVerificationEmail(user.email, token);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('Failed to send verification email:', err);
     }
 
@@ -175,7 +174,6 @@ authRoutes.post('/resend-verification', authenticate, async (req: Request, res: 
   try {
     await sendVerificationEmail(user.email, token);
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Failed to send verification email:', err);
     return res.status(500).json({ message: 'Failed to send verification email' });
   }

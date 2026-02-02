@@ -13,11 +13,7 @@ export function VerifyEmail() {
   const [message, setMessage] = useState<string>('')
 
   useEffect(() => {
-    if (!token) {
-      setStatus('error')
-      setMessage('Missing verification token.')
-      return
-    }
+    if (!token) return
 
     ;(async () => {
       setStatus('loading')
@@ -33,6 +29,38 @@ export function VerifyEmail() {
       }
     })()
   }, [token, refreshMe])
+
+  if (!token) {
+    return (
+      <div className="sl-page">
+        <div className="sl-container">
+          <header className="sl-header">
+            <div>
+              <h1 className="sl-h1">Verify email</h1>
+              <p className="sl-subtitle">Confirm your email address</p>
+            </div>
+          </header>
+
+          <section className="sl-card" aria-label="Email verification">
+            <p className="sl-subtitle" style={{ margin: 0 }}>
+              Missing verification token.
+            </p>
+
+            <div className="sl-divider" />
+
+            <div className="sl-row">
+              <Link className="sl-button sl-button--primary" to="/profile">
+                Go to profile
+              </Link>
+              <Link className="sl-button" to="/">
+                Home
+              </Link>
+            </div>
+          </section>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="sl-page">

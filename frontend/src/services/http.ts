@@ -8,6 +8,32 @@ function getTokenFromStorage() {
   return localStorage.getItem('sellit_token');
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function pickMessage(data: unknown) {
+  if (!isRecord(data)) return null;
+  const msg = data.message;
+  return typeof msg === 'string' ? msg : null;
+}
+
+function pickErrors(data: unknown): HttpError['errors'] | undefined {
+  if (!isRecord(data)) return undefined;
+  const errs = data.errors;
+  if (!Array.isArray(errs)) return undefined;
+
+  const normalized: Array<{ path?: string; msg: string }> = [];
+  for (const item of errs) {
+    if (!isRecord(item)) continue;
+    const msg = item.msg;
+    if (typeof msg !== 'string') continue;
+    const path = typeof item.path === 'string' ? item.path : undefined;
+    normalized.push({ path, msg });
+  }
+  return normalized.length ? normalized : undefined;
+}
+
 export async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
 
@@ -34,14 +60,8 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     const err: HttpError = {
       status: res.status,
-      message:
-        (data && typeof data === 'object' && 'message' in data && typeof (data as any).message === 'string'
-          ? (data as any).message
-          : 'Request failed') as string,
-      errors:
-        data && typeof data === 'object' && 'errors' in data && Array.isArray((data as any).errors)
-          ? ((data as any).errors as HttpError['errors'])
-          : undefined
+      message: pickMessage(data) ?? 'Request failed',
+      errors: pickErrors(data)
     };
     throw err;
   }

@@ -1,0 +1,9 @@
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "ignore": ["src/**/*.test.ts", "tests/**/*.ts", "dist"],
+  "exec": "node scripts/start-with-test-utils.js",
+  "env": {
+    "ENABLE_TEST_UTILS": "true"
+  }
+}

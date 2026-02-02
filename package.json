@@ -5,9 +5,11 @@
   "description": "SellIt monorepo (Express + MongoDB backend, React + TS frontend).",
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm -w backend run dev\" \"npm -w frontend run dev\"",
+    "dev:e2e": "concurrently -n backend,frontend -c blue,green \"npm -w backend run dev:e2e\" \"npm -w frontend run dev\"",
     "test": "npm -w backend test && npm -w frontend test",
     "lint": "npm -w backend run lint && npm -w frontend run lint",
-    "build": "npm -w backend run build && npm -w frontend run build"
+    "build": "npm -w backend run build && npm -w frontend run build",
+    "e2e": "playwright test"
   },
   "workspaces": [
     "backend",
@@ -18,6 +20,8 @@
   "license": "ISC",
   "packageManager": "npm@11.4.2",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@playwright/test": "^1.58.1",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0"
   }
 }

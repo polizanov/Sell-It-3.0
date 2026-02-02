@@ -46,16 +46,13 @@ describe('auth routing', () => {
 
   it('shows success message after verify-email call', async () => {
     // Minimal fetch mock for verify endpoint.
-    const fetchMock = jest.fn(async () => {
-      return {
-        ok: true,
+    const fetchMock = jest.fn(async (): Promise<Response> => {
+      return new Response(JSON.stringify({ message: 'Email verified' }), {
         status: 200,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ message: 'Email verified' }),
-        text: async () => ''
-      } as any
+        headers: { 'Content-Type': 'application/json' }
+      })
     })
-    ;(globalThis as any).fetch = fetchMock
+    ;(globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock as unknown as typeof fetch
 
     const router = createMemoryRouter(
       [
@@ -83,7 +80,7 @@ describe('auth routing', () => {
 
   it('shows error when verify-email token is missing (no request made)', async () => {
     const fetchMock = jest.fn()
-    ;(globalThis as any).fetch = fetchMock
+    ;(globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock as unknown as typeof fetch
 
     const router = createMemoryRouter(
       [
@@ -107,16 +104,13 @@ describe('auth routing', () => {
   })
 
   it('shows backend error message when verify-email fails', async () => {
-    const fetchMock = jest.fn(async () => {
-      return {
-        ok: false,
+    const fetchMock = jest.fn(async (): Promise<Response> => {
+      return new Response(JSON.stringify({ message: 'Invalid or expired verification token' }), {
         status: 400,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ message: 'Invalid or expired verification token' }),
-        text: async () => ''
-      } as any
+        headers: { 'Content-Type': 'application/json' }
+      })
     })
-    ;(globalThis as any).fetch = fetchMock
+    ;(globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock as unknown as typeof fetch
 
     const router = createMemoryRouter(
       [

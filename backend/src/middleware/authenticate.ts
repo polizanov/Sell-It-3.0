@@ -2,11 +2,9 @@ import type { RequestHandler } from 'express';
 
 import { verifyAccessToken } from '../utils/jwt';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { id: string };
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: { id: string };
   }
 }
 
