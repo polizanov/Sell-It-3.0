@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 import { TextDecoder, TextEncoder } from 'node:util'
+import 'whatwg-fetch'
 
 // React Router depends on TextEncoder in the test environment.
 if (!globalThis.TextEncoder) {

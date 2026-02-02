@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 
-const NAV_LINKS: Array<{ to: string; label: string }> = [
+import { useAuth } from '../../contexts/AuthContext'
+
+const NAV_LINKS: Array<{ to: string; label: string; auth?: 'anon' | 'authed' | 'any' }> = [
   { to: '/', label: 'Home' },
-  { to: '/login', label: 'Login' },
-  { to: '/register', label: 'Register' },
-  { to: '/profile', label: 'Profile' },
+  { to: '/login', label: 'Login', auth: 'anon' },
+  { to: '/register', label: 'Register', auth: 'anon' },
+  { to: '/profile', label: 'Profile', auth: 'authed' },
   { to: '/products', label: 'All products' },
-  { to: '/products/create', label: 'Create product' },
+  { to: '/products/create', label: 'Create product', auth: 'authed' },
 ]
 
 function getNavLinkClass(isActive: boolean) {
@@ -17,6 +19,7 @@ function getNavLinkClass(isActive: boolean) {
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const { user, logout } = useAuth()
 
   const burgerRef = useRef<HTMLButtonElement>(null)
   const mobilePanelRef = useRef<HTMLDivElement>(null)
@@ -104,11 +107,21 @@ export function Navigation() {
         </NavLink>
 
         <div className="sl-nav__links" aria-label="Primary links">
-          {NAV_LINKS.map((l) => (
+          {NAV_LINKS.filter((l) => {
+            if (!l.auth || l.auth === 'any') return true
+            if (l.auth === 'anon') return !user
+            return Boolean(user)
+          }).map((l) => (
             <NavLink key={l.to} to={l.to} className={({ isActive }) => getNavLinkClass(isActive)}>
               {l.label}
             </NavLink>
           ))}
+
+          {user ? (
+            <button className="sl-nav__link" type="button" onClick={logout}>
+              Logout
+            </button>
+          ) : null}
         </div>
 
         <button
@@ -146,7 +159,11 @@ export function Navigation() {
         aria-hidden={!isMobileMenuOpen}
       >
         <div className="sl-nav__panel-links">
-          {NAV_LINKS.map((l) => (
+          {NAV_LINKS.filter((l) => {
+            if (!l.auth || l.auth === 'any') return true
+            if (l.auth === 'anon') return !user
+            return Boolean(user)
+          }).map((l) => (
             <NavLink
               key={l.to}
               to={l.to}
@@ -156,6 +173,19 @@ export function Navigation() {
               {l.label}
             </NavLink>
           ))}
+
+          {user ? (
+            <button
+              className="sl-nav__link"
+              type="button"
+              onClick={() => {
+                logout()
+                closeMobileMenu({ returnFocus: true })
+              }}
+            >
+              Logout
+            </button>
+          ) : null}
         </div>
       </div>
     </nav>

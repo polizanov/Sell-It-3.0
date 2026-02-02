@@ -1,5 +1,5 @@
 ---
-name: tech-lead
+name: project-lead
 description: Technical lead orchestrating feature development. Use proactively for new features, complex tasks, or multi-component work. Delegates to backend-expert for APIs/database, design-expert and react-expert for frontend/UI, and ensures qa-expert validates all implementations. Coordinates the team and ensures quality delivery.
 ---
 

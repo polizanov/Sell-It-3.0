@@ -1,7 +1,4 @@
-import axios from 'axios';
-
-// In dev, Vite proxies `/api/*` to the backend (see `vite.config.ts`).
-export const api = axios.create({
-  baseURL: ''
-});
+// Deprecated: kept temporarily to avoid breaking older imports.
+// Use `http` from `src/services/http.ts` for all requests (fetch-based).
+export {};
 

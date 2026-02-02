@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { api } from '../services/api'
+import { http } from '../services/http'
 
 export function Home() {
   const [count, setCount] = useState(0)
@@ -25,8 +25,8 @@ export function Home() {
               className="sl-button sl-button--primary"
               onClick={async () => {
                 try {
-                  const res = await api.get('/api/health')
-                  setApiStatus(res.data?.status ?? 'unknown')
+                  const res = await http<{ status: string }>('/api/health')
+                  setApiStatus(res.status ?? 'unknown')
                 } catch {
                   setApiStatus('error')
                 }

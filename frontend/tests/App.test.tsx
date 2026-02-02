@@ -2,10 +2,11 @@ import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 
 import App from '../src/App'
+import { AuthProvider } from '../src/contexts/AuthContext'
 import { Home } from '../src/pages/Home'
 
 describe('App', () => {
-  it('renders the layout and home route', () => {
+  it('renders the layout and home route', async () => {
     const router = createMemoryRouter(
       [
         {
@@ -17,10 +18,14 @@ describe('App', () => {
       { initialEntries: ['/'] },
     )
 
-    render(<RouterProvider router={router} />)
+    render(
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>,
+    )
 
-    expect(screen.getByRole('link', { name: /sellit/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /home/i })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /sellit/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /home/i })).toBeInTheDocument()
   })
 })
 

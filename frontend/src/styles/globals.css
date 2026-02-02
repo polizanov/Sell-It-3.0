@@ -114,6 +114,46 @@ select {
   box-shadow: var(--sl-shadow-sm);
 }
 
+.sl-form {
+  display: grid;
+  gap: var(--sl-space-4);
+}
+
+.sl-field {
+  display: grid;
+  gap: var(--sl-space-2);
+}
+
+.sl-label {
+  font-size: var(--sl-text-sm);
+  color: var(--sl-muted);
+}
+
+.sl-input {
+  width: 100%;
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--sl-radius-sm);
+  border: 1px solid var(--sl-border);
+  background: var(--sl-surface);
+}
+
+.sl-input:focus-visible {
+  outline: 0.3rem solid var(--sl-focus-ring);
+  outline-offset: 0.2rem;
+}
+
+.sl-help {
+  margin: 0;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-muted);
+}
+
+.sl-error {
+  margin: 0;
+  font-size: var(--sl-text-sm);
+  color: #ff6b6b;
+}
+
 .sl-row {
   display: flex;
   flex-wrap: wrap;
