@@ -22,6 +22,17 @@ export type FavoriteDto = {
   likedUsers: string[]
 }
 
+type ProductPayloadBase = {
+  title: string
+  description: string
+  price: number
+  images?: Array<{ url: string; publicId: string }>
+}
+
+export type UpdateProductPayload =
+  | (ProductPayloadBase & { categoryId: string; categoryName?: never })
+  | (ProductPayloadBase & { categoryName: string; categoryId?: never })
+
 export type ProductsListResponse = {
   products: ProductDto[]
   page: number
@@ -43,6 +54,19 @@ export async function getMyProducts(args: { page: number; limit: number }) {
 export async function getMyFavorites(args: { page: number; limit: number }) {
   const qs = new URLSearchParams({ page: String(args.page), limit: String(args.limit) })
   return http<ProductsListResponse>(`/api/products/favorites?${qs.toString()}`)
+}
+
+export async function updateProduct(id: string, payload: UpdateProductPayload) {
+  const res = await http<{ product: ProductDto }>(`/api/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  })
+  return res.product
+}
+
+export async function deleteProduct(id: string) {
+  const res = await http<{ ok: boolean }>(`/api/products/${id}`, { method: 'DELETE' })
+  return res.ok
 }
 
 export async function favoriteProduct(id: string) {

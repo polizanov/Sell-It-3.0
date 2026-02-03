@@ -104,6 +104,50 @@
   flex-wrap: wrap;
 }
 
+.product-details__modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 8, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.4rem;
+  z-index: 50;
+}
+
+.product-details__modal {
+  width: 100%;
+  max-width: 48rem;
+  background: var(--sl-bg-elev);
+  border: 1px solid var(--sl-border);
+  border-radius: 1.2rem;
+  padding: 2.4rem;
+  display: grid;
+  gap: 1.6rem;
+}
+
+.product-details__modalHeader {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.product-details__modalTitle {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.product-details__modalSubtitle {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--sl-muted);
+}
+
+.product-details__modalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
 @media (min-width: 768px) {
   .product-details__layout {
     grid-template-columns: 1.2fr 1fr;

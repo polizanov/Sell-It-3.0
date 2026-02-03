@@ -34,15 +34,16 @@ test('verified user can create product with image', async ({ page, request }) =>
 
   // Select existing category
   const categorySelect = page.locator('select[data-testid="create-category-select"]');
+  await expect(categorySelect).toBeEnabled();
   await categorySelect.selectOption({ index: 1 }); // Select first category (not the placeholder)
 
   // Upload image
-  const imagePath = path.join(__dirname, '..', 'frontend', '1.png');
+  const imagePath = path.join(__dirname, '..', 'frontend', 'public', 'vite.svg');
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(imagePath);
 
   // Wait for image preview to appear
-  await page.waitForSelector('img[alt*="1.png"]', { timeout: 5000 });
+  await page.waitForSelector('img[alt*="vite.svg"]', { timeout: 5000 });
 
   // Take screenshot before submit
   await page.screenshot({ path: 'test-results/before-submit.png' });
@@ -61,9 +62,10 @@ test('verified user can create product with image', async ({ page, request }) =>
     const errorElements = page.getByRole('alert');
     const count = await errorElements.count();
     if (count > 0) {
-      const errorTexts = [];
+      const errorTexts: string[] = [];
       for (let i = 0; i < count; i++) {
-        errorTexts.push(await errorElements.nth(i).textContent());
+        const msg = (await errorElements.nth(i).textContent()) ?? '';
+        if (msg) errorTexts.push(msg);
       }
       console.error('Console logs:', consoleLogs.join('\n'));
       throw new Error(`Form submission failed with errors:\n${errorTexts.join('\n')}\n\nConsole logs:\n${consoleLogs.join('\n')}`);

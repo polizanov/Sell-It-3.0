@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AllProducts } from './pages/AllProducts'
 import { CreateProduct } from './pages/CreateProduct'
+import { EditProduct } from './pages/EditProduct'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { ProductDetails } from './pages/ProductDetails'
@@ -38,6 +39,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute requireVerified>
             <CreateProduct />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'products/:id/edit',
+        element: (
+          <ProtectedRoute requireVerified>
+            <EditProduct />
           </ProtectedRoute>
         )
       }

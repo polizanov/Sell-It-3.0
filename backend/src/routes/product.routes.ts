@@ -207,6 +207,145 @@ productRoutes.post(
   }
 );
 
+productRoutes.put(
+  '/:id',
+  authenticate,
+  requireVerified,
+  [
+    param('id').isMongoId().withMessage('id must be a valid Mongo id'),
+    body('title').isString().trim().notEmpty().withMessage('Title is required'),
+    body('description').isString().trim().notEmpty().withMessage('Description is required'),
+    body('price')
+      .not()
+      .isEmpty()
+      .withMessage('Price is required')
+      .bail()
+      .isFloat({ gt: 0 })
+      .withMessage('Price must be a positive number')
+      .toFloat(),
+    body().custom((value) => {
+      const hasId = typeof value?.categoryId === 'string' && value.categoryId.trim().length > 0;
+      const hasName = typeof value?.categoryName === 'string' && value.categoryName.trim().length > 0;
+      if (hasId === hasName) {
+        throw new Error('Provide exactly one of categoryId or categoryName');
+      }
+      return true;
+    }),
+    body('categoryId')
+      .optional()
+      .isMongoId()
+      .withMessage('categoryId must be a valid Mongo id'),
+    body('categoryName')
+      .optional()
+      .isString()
+      .trim()
+      .isLength({ min: 1, max: 64 })
+      .withMessage('categoryName must be 1-64 characters'),
+    body('images').optional().isArray({ max: 5 }).withMessage('Images must have at most 5 items'),
+    body('images.*.url')
+      .optional({ nullable: true })
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage('Image url is required'),
+    body('images.*.publicId')
+      .optional({ nullable: true })
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage('Image publicId is required')
+  ],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const existing = await Product.findById(req.params.id).select({ sellerId: 1 }).lean();
+    if (!existing) return res.status(404).json({ message: 'Product not found' });
+    if (existing.sellerId.toString() !== userId) {
+      return res.status(403).json({ message: 'You can only edit your own products' });
+    }
+
+    const title = String(req.body.title).trim();
+    const description = String(req.body.description).trim();
+    const price = Number(req.body.price);
+
+    const images = Array.isArray(req.body.images)
+      ? (req.body.images as Array<ProductImageInput>).slice(0, 5).map((img) => ({
+          url: String(img.url).trim(),
+          publicId: String(img.publicId).trim()
+        }))
+      : undefined;
+
+    let categoryId: string;
+    let categoryName: string;
+
+    if (typeof req.body.categoryId === 'string' && req.body.categoryId.trim()) {
+      const category = await Category.findById(req.body.categoryId).select({ _id: 1, name: 1 }).lean();
+      if (!category) {
+        return res.status(400).json({ message: 'Category not found' });
+      }
+      categoryId = category._id.toString();
+      categoryName = category.name;
+    } else {
+      const normalizedName = normalizeCategoryName(req.body.categoryName);
+      if (!normalizedName) {
+        return res.status(400).json({ message: 'categoryName is required' });
+      }
+
+      const category = await Category.findOneAndUpdate(
+        { name: normalizedName },
+        { $setOnInsert: { name: normalizedName } },
+        { new: true, upsert: true }
+      )
+        .select({ _id: 1, name: 1 })
+        .lean();
+
+      categoryId = category._id.toString();
+      categoryName = category.name;
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      { title, description, price, categoryId, images },
+      { new: true }
+    ).lean();
+
+    if (!updated) return res.status(404).json({ message: 'Product not found' });
+
+    return res.json({
+      product: {
+        id: updated._id.toString(),
+        sellerId: updated.sellerId.toString(),
+        title: updated.title,
+        description: updated.description,
+        price: updated.price,
+        category: { id: categoryId, name: categoryName },
+        images: updated.images ?? [],
+        publishedAt: new Date(updated.publishedAt).toISOString()
+      }
+    });
+  }
+);
+
+productRoutes.delete(
+  '/:id',
+  authenticate,
+  requireVerified,
+  [param('id').isMongoId().withMessage('id must be a valid Mongo id')],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const existing = await Product.findById(req.params.id).select({ sellerId: 1 }).lean();
+    if (!existing) return res.status(404).json({ message: 'Product not found' });
+    if (existing.sellerId.toString() !== userId) {
+      return res.status(403).json({ message: 'You can only delete your own products' });
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
+
+    return res.json({ ok: true });
+  }
+);
+
 productRoutes.get('/', async (req: Request, res: Response) => {
   const result = await listProducts({}, req.query);
   return res.json(result);

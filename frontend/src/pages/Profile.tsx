@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useAuth } from '../contexts/AuthContext'
 import { http, type HttpError } from '../services/http'
@@ -63,6 +63,8 @@ async function uploadToCloudinary(file: File) {
 export function Profile() {
   const { user, logout, resendVerification, refreshMe } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const tab = useMemo<TabKey>(() => {
     const raw = searchParams.get('tab')
@@ -85,6 +87,7 @@ export function Profile() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null)
 
   const initials = useMemo(() => buildInitials(user?.username, user?.email), [user?.username, user?.email])
 
@@ -93,6 +96,13 @@ export function Profile() {
       if (previewUrl) URL.revokeObjectURL(previewUrl)
     }
   }, [previewUrl])
+
+  useEffect(() => {
+    const state = location.state as { justDeletedTitle?: string } | null
+    if (!state?.justDeletedTitle) return
+    setDeleteSuccess(`Product "${state.justDeletedTitle}" deleted`)
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null })
+  }, [location.pathname, location.search, location.state, navigate])
 
   useEffect(() => {
     ;(async () => {
@@ -288,6 +298,12 @@ export function Profile() {
               My favorites
             </button>
           </div>
+
+          {deleteSuccess ? (
+            <p className="profile__success" role="status">
+              {deleteSuccess}
+            </p>
+          ) : null}
 
           {isLoading ? (
             <p className="sl-subtitle" style={{ margin: 0 }}>

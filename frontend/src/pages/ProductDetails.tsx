@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Navigation, Pagination, A11y } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
 import { useAuth } from '../contexts/AuthContext'
 import { type HttpError } from '../services/http'
-import { favoriteProduct, getProductById, type ProductDetailsDto, unfavoriteProduct } from '../services/products'
+import { deleteProduct, favoriteProduct, getProductById, type ProductDetailsDto, unfavoriteProduct } from '../services/products'
 import './product-details.css'
 
 import 'swiper/css'
@@ -15,6 +15,7 @@ import 'swiper/css/pagination'
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
+  const navigate = useNavigate()
   const { token, user, userId } = useAuth()
 
   const [product, setProduct] = useState<ProductDetailsDto | null>(null)
@@ -22,6 +23,9 @@ export function ProductDetails() {
   const [error, setError] = useState<string | null>(null)
   const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false)
   const [favoriteError, setFavoriteError] = useState<string | null>(null)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -156,11 +160,24 @@ export function ProductDetails() {
 
                   {token && user && user.isEmailVerified && isAuthor ? (
                     <div className="product-details__ownerActions" aria-label="Owner actions">
-                      <button className="sl-button" type="button" disabled title="Not implemented yet">
-                        Edit (coming soon)
+                      <button
+                        className="sl-button"
+                        type="button"
+                        data-testid="owner-edit"
+                        onClick={() => navigate(`/products/${product.id}/edit`)}
+                      >
+                        Edit
                       </button>
-                      <button className="sl-button" type="button" disabled title="Not implemented yet">
-                        Delete (coming soon)
+                      <button
+                        className="sl-button"
+                        type="button"
+                        data-testid="owner-delete"
+                        onClick={() => {
+                          setDeleteError(null)
+                          setIsDeleteOpen(true)
+                        }}
+                      >
+                        Delete
                       </button>
                     </div>
                   ) : null}
@@ -209,6 +226,63 @@ export function ProductDetails() {
                       ) : null}
                     </div>
                   ) : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {isDeleteOpen && product ? (
+            <div className="product-details__modalOverlay" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+              <div className="product-details__modal" data-testid="delete-modal">
+                <div className="product-details__modalHeader">
+                  <h3 className="product-details__modalTitle" id="delete-modal-title">
+                    Delete product
+                  </h3>
+                  <p className="product-details__modalSubtitle">
+                    This will permanently remove <strong>{product.title}</strong>. This action can’t be undone.
+                  </p>
+                </div>
+
+                {deleteError ? (
+                  <p className="sl-error" role="alert" style={{ margin: 0 }}>
+                    {deleteError}
+                  </p>
+                ) : null}
+
+                <div className="product-details__modalActions">
+                  <button
+                    className="sl-button sl-button--primary"
+                    type="button"
+                    data-testid="delete-confirm"
+                    disabled={isDeleting}
+                    onClick={() => {
+                      if (!id) return
+                      setIsDeleting(true)
+                      setDeleteError(null)
+                      deleteProduct(id)
+                        .then(() => {
+                          navigate('/profile?tab=products', { state: { justDeletedTitle: product.title } })
+                        })
+                        .catch((e) => {
+                          const err = e as HttpError
+                          setDeleteError(err.message || 'Failed to delete product')
+                        })
+                        .finally(() => {
+                          setIsDeleting(false)
+                        })
+                    }}
+                  >
+                    {isDeleting ? 'Deleting…' : 'Yes, delete'}
+                  </button>
+                  <button
+                    className="sl-button"
+                    type="button"
+                    data-testid="delete-cancel"
+                    onClick={() => setIsDeleteOpen(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>
