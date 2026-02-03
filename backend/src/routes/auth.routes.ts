@@ -116,6 +116,37 @@ authRoutes.get('/me', authenticate, async (req: Request, res: Response) => {
   return res.json({ user: toPublicUser(user) });
 });
 
+authRoutes.patch(
+  '/me',
+  authenticate,
+  [
+    body('profileImageUrl')
+      .optional({ nullable: true })
+      .isString()
+      .isLength({ max: 2048 })
+      .withMessage('Profile image URL is too long')
+  ],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+    const raw = req.body.profileImageUrl;
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      user.profileImageUrl = trimmed.length ? trimmed : null;
+    } else if (raw === null) {
+      user.profileImageUrl = null;
+    }
+
+    await user.save();
+    return res.json({ user: toPublicUser(user) });
+  }
+);
+
 authRoutes.get(
   '/verify-email',
   [query('token').isString().isLength({ min: 10 }).withMessage('Token is required')],

@@ -61,6 +61,8 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ publishedAt: -1 });
+productSchema.index({ sellerId: 1, publishedAt: -1 });
+productSchema.index({ likedUsers: 1, publishedAt: -1 });
 
 export type ProductDoc = mongoose.InferSchemaType<typeof productSchema> & {
   _id: mongoose.Types.ObjectId;

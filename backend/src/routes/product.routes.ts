@@ -40,6 +40,58 @@ function isPopulatedCategory(
   return typeof x === 'object' && x !== null && 'name' in x;
 }
 
+function parsePagination(query: Request['query']) {
+  const rawPage = Array.isArray(query.page) ? query.page[0] : query.page;
+  const rawLimit = Array.isArray(query.limit) ? query.limit[0] : query.limit;
+
+  const parsedPage = typeof rawPage === 'string' ? Number.parseInt(rawPage, 10) : Number.NaN;
+  const parsedLimit = typeof rawLimit === 'string' ? Number.parseInt(rawLimit, 10) : Number.NaN;
+
+  const page = Number.isFinite(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
+  const limitBase = Number.isFinite(parsedLimit) && parsedLimit >= 1 ? parsedLimit : 9;
+  const limit = Math.min(50, limitBase);
+  const skip = (page - 1) * limit;
+
+  return { page, limit, skip };
+}
+
+async function listProducts(filter: Record<string, unknown>, query: Request['query']) {
+  const { page, limit, skip } = parsePagination(query);
+
+  const [total, products] = await Promise.all([
+    Product.countDocuments(filter),
+    Product.find(filter)
+      .sort({ publishedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: 'categoryId', select: { name: 1 } })
+      .lean()
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  const mapped = (products as unknown as ProductListItem[]).map((p) => {
+    const categoryId = isPopulatedCategory(p.categoryId) ? p.categoryId._id.toString() : p.categoryId.toString();
+    const categoryName = isPopulatedCategory(p.categoryId) ? p.categoryId.name ?? 'unknown' : 'unknown';
+
+    return {
+      id: p._id.toString(),
+      sellerId: p.sellerId.toString(),
+      title: p.title,
+      description: p.description,
+      price: p.price,
+      category: {
+        id: categoryId,
+        name: categoryName
+      },
+      images: p.images ?? [],
+      publishedAt: new Date(p.publishedAt).toISOString()
+    };
+  });
+
+  return { products: mapped, page, limit, total, totalPages };
+}
+
 productRoutes.post(
   '/',
   authenticate,
@@ -156,57 +208,18 @@ productRoutes.post(
 );
 
 productRoutes.get('/', async (req: Request, res: Response) => {
-  const rawPage = Array.isArray(req.query.page) ? req.query.page[0] : req.query.page;
-  const rawLimit = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+  const result = await listProducts({}, req.query);
+  return res.json(result);
+});
 
-  const parsedPage = typeof rawPage === 'string' ? Number.parseInt(rawPage, 10) : Number.NaN;
-  const parsedLimit = typeof rawLimit === 'string' ? Number.parseInt(rawLimit, 10) : Number.NaN;
+productRoutes.get('/mine', authenticate, async (req: Request, res: Response) => {
+  const result = await listProducts({ sellerId: req.user!.id }, req.query);
+  return res.json(result);
+});
 
-  const page = Number.isFinite(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
-  const limitBase = Number.isFinite(parsedLimit) && parsedLimit >= 1 ? parsedLimit : 9;
-  const limit = Math.min(50, limitBase);
-
-  const skip = (page - 1) * limit;
-
-  const filter = {};
-  const [total, products] = await Promise.all([
-    Product.countDocuments(filter),
-    Product.find(filter)
-      .sort({ publishedAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate({ path: 'categoryId', select: { name: 1 } })
-      .lean()
-  ]);
-
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-
-  return res.json({
-    products: (products as unknown as ProductListItem[]).map((p) => {
-      const categoryId = isPopulatedCategory(p.categoryId)
-        ? p.categoryId._id.toString()
-        : p.categoryId.toString();
-      const categoryName = isPopulatedCategory(p.categoryId) ? p.categoryId.name ?? 'unknown' : 'unknown';
-
-      return {
-        id: p._id.toString(),
-        sellerId: p.sellerId.toString(),
-        title: p.title,
-        description: p.description,
-        price: p.price,
-        category: {
-          id: categoryId,
-          name: categoryName
-        },
-        images: p.images ?? [],
-        publishedAt: new Date(p.publishedAt).toISOString()
-      };
-    }),
-    page,
-    limit,
-    total,
-    totalPages
-  });
+productRoutes.get('/favorites', authenticate, async (req: Request, res: Response) => {
+  const result = await listProducts({ likedUsers: req.user!.id }, req.query);
+  return res.json(result);
 });
 
 productRoutes.get(

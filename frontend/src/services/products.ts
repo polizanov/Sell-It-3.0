@@ -22,9 +22,27 @@ export type FavoriteDto = {
   likedUsers: string[]
 }
 
+export type ProductsListResponse = {
+  products: ProductDto[]
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
 export async function getProductById(id: string) {
   const res = await http<{ product: ProductDetailsDto }>(`/api/products/${id}`)
   return res.product
+}
+
+export async function getMyProducts(args: { page: number; limit: number }) {
+  const qs = new URLSearchParams({ page: String(args.page), limit: String(args.limit) })
+  return http<ProductsListResponse>(`/api/products/mine?${qs.toString()}`)
+}
+
+export async function getMyFavorites(args: { page: number; limit: number }) {
+  const qs = new URLSearchParams({ page: String(args.page), limit: String(args.limit) })
+  return http<ProductsListResponse>(`/api/products/favorites?${qs.toString()}`)
 }
 
 export async function favoriteProduct(id: string) {
